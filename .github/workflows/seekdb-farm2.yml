@@ -16,7 +16,7 @@ on:
 
 jobs:
   seekdb:
-    name: seekdb3
+    name: seekdb
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
