@@ -29,7 +29,7 @@ jobs:
           GITHUB_RUN_ATTEMPT: ${{ github.run_attempt }}
         run: |
           pip install -q requests
-          python3 .github/scripts/seekdb_wait_result.py --timeout 14400 --poll-interval 15
+          python3 .github/script/seekdb_wait_result.py --timeout 14400 --poll-interval 15
         continue-on-error: true
 
       - name: Farm2 result
