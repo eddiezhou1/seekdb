@@ -1,18 +1,11 @@
 name: SeekDB Farm2
 
 on:
+  push:
+    branches: [ develop, master ]
   pull_request:
-    branches: [ master,develop ]
-    types: [opened, reopened, synchronize, ready_for_review]
-    paths-ignore:
-      - 'docs/**'
-      - '.github/ISSUE_TEMPLATE/**'
-      - '.github/pull_request_template.md'
-      - 'README.md'
-      - 'README_CN.md'
-      - 'CONTRIBUTING.md'
-  schedule:
-    - cron: '30 9 * * *'
+    branches: [ develop, master ]
+  workflow_dispatch:
 
 jobs:
   seekdb:
