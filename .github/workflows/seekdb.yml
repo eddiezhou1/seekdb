@@ -51,6 +51,8 @@ jobs:
           export SEEKDB_TASK_DIR="${{ env.SEEKDB_TASK_DIR }}"
           export RELEASE_MODE="${{ vars.RELEASE_MODE || '' }}"
           export FORWARDING_HOST="${{ vars.FORWARDING_HOST || '' }}"
+          # 保证 gen_parser.sh 使用 deps 里的 bison 2.4.1，不依赖系统 bison（Ubuntu 24 为 3.x）
+          export PATH="${{ github.workspace }}/deps/3rd/usr/local/oceanbase/devtools/bin:$PATH"
           if [[ -n "${{ vars.FARM2_WORKER_IMAGE || '' }}" ]]; then
             docker run --rm \
               -v "${{ github.workspace }}:/workspace" \
@@ -60,6 +62,7 @@ jobs:
               -e SEEKDB_TASK_DIR="/workspace/seekdb_build/${{ github.run_id }}" \
               -e RELEASE_MODE="${{ vars.RELEASE_MODE || '' }}" \
               -e FORWARDING_HOST="${{ vars.FORWARDING_HOST || '' }}" \
+              -e PATH="/workspace/deps/3rd/usr/local/oceanbase/devtools/bin:$PATH" \
               "${{ vars.FARM2_WORKER_IMAGE }}" \
               /bin/bash -c '. /workspace/.github/script/seekdb/compile.sh'
           else
