@@ -34,6 +34,7 @@ jobs:
 
       - name: Prepare (jobargs, run_jobs)
         run: |
+          echo '172.16.0.220 mirrors.oceanbase.com' >> /etc/hosts || true
           chmod +x .github/script/seekdb/prepare.sh
           export GITHUB_RUN_ID="${{ github.run_id }}"
           export GITHUB_WORKSPACE="${{ github.workspace }}"
