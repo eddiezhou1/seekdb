@@ -29,6 +29,40 @@
 - `RELEASE_MODE`：非空时按 release 模式编译。
 - `FORWARDING_HOST`：写 `/etc/hosts` 将 mirrors.oceanbase.com 解析到该主机（代理场景）。
 
+## 可执行镜像（Docker）
+
+目录下提供 `Dockerfile`，用于构建与 workflow 一致的运行环境（Ubuntu 22.04 + build-essential、rpm/cpio、zstd，并写入 `172.16.0.220 mirrors.oceanbase.com` 到 `/etc/hosts`）。
+
+**构建：**
+
+```bash
+# 在仓库根目录
+docker build -t seekdb-ci:latest -f .github/script/seekdb/Dockerfile .
+```
+
+**本地跑单步（挂载当前仓库）：**
+
+```bash
+export WS="$PWD"
+export RUN_ID="local"
+export TASK_DIR="$WS/seekdb_build/$RUN_ID"
+mkdir -p "$TASK_DIR"
+
+# Prepare
+docker run --rm -v "$WS:/workspace" -w /workspace \
+  -e GITHUB_RUN_ID="$RUN_ID" -e GITHUB_WORKSPACE=/workspace \
+  -e MYSQLTEST_SLICES=4 -e SEEKDB_TASK_DIR="/workspace/seekdb_build/$RUN_ID" \
+  seekdb-ci:latest -c '. .github/script/seekdb/prepare.sh'
+
+# Compile（会执行 build.sh debug --init --make，需能访问 mirrors.oceanbase.com）
+docker run --rm -v "$WS:/workspace" -w /workspace \
+  -e GITHUB_RUN_ID="$RUN_ID" -e GITHUB_WORKSPACE=/workspace \
+  -e SEEKDB_TASK_DIR="/workspace/seekdb_build/$RUN_ID" \
+  seekdb-ci:latest -c '. .github/script/seekdb/compile.sh'
+```
+
+在 Actions 中可将该镜像设为仓库变量 `FARM2_WORKER_IMAGE`，则 Compile / Mysqltest 步骤会在容器内执行。
+
 ## 与 farm-jenkins 的对应关系
 
 本目录下 `scripts/` 中的脚本为本地占位实现；若需与 Jenkins/Farm2 行为完全一致，可从 farm-jenkins 仓库复制同名脚本（如 `farm_compile.sh`、`farm_post_compile.sh`、`mysqltest_for_farm.sh`）到 `scripts/` 覆盖即可，无需 clone。
