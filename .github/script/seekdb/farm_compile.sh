@@ -7,7 +7,8 @@ cd "$WORKSPACE"
 # Use repo build.sh; debug or release from PACKAGE_TYPE
 build_type="${PACKAGE_TYPE:-debug}"
 if [[ -x "$WORKSPACE/build.sh" ]]; then
-  bash "$WORKSPACE/build.sh" "$build_type" --init --make
+  # CI 下关闭 parser 缓存，避免首次运行读不到 _MD5 报错
+  bash "$WORKSPACE/build.sh" "$build_type" --init --make -DNEED_PARSER_CACHE=OFF
 else
   echo "[farm_compile.sh] No build.sh in $WORKSPACE, skip."
 fi
