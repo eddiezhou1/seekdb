@@ -70,6 +70,12 @@ jobs:
         if: steps.compile.outcome == 'failure'
         run: echo '++compile++' >> "${{ env.SEEKDB_TASK_DIR }}/fail_cases.output"
 
+      - name: Show parser error (if any)
+        if: steps.compile.outcome == 'failure'
+        run: |
+          if [[ -f src/sql/parser/_gen_parser.error ]]; then echo "=== _gen_parser.error ==="; cat src/sql/parser/_gen_parser.error; fi
+          if [[ -f src/sql/parser/_gen_parser.output ]]; then echo "=== _gen_parser.output (last 100 lines) ==="; tail -100 src/sql/parser/_gen_parser.output; fi
+
       - name: Mysqltest slice 0
         if: success()
         run: |
