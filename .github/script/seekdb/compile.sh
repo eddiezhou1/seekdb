@@ -22,7 +22,6 @@ export REPO="server"
 export _CONDOR_JOB_IWD="$SCRIPT_DIR"
 # 保证 build -> cmake -> gen_parser.sh 使用 deps 里的 bison 2.4.1（gen_parser.sh 要求）
 export PATH="$WORKSPACE/deps/3rd/usr/local/oceanbase/devtools/bin:$PATH"
-[[ -n "$FORWARDING_HOST" ]] && echo "$FORWARDING_HOST mirrors.oceanbase.com" >> /etc/hosts 2>/dev/null || true
 
 cd "$WORKSPACE"
 # Source frame (env) then run compile
