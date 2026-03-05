@@ -18,6 +18,8 @@ export CREATE_LIBOBSERVER_SO=0
 export ENABLE_LIBOBLOG=0
 export BUILD_TARGET=""
 export REPO="server"
+# farm_compile.sh 里 source $HOME/scripts/frame.sh，且 HOME=$_CONDOR_JOB_IWD，故指向含 scripts 的目录
+export _CONDOR_JOB_IWD="$SCRIPT_DIR"
 # 保证 build -> cmake -> gen_parser.sh 使用 deps 里的 bison 2.4.1（gen_parser.sh 要求）
 export PATH="$WORKSPACE/deps/3rd/usr/local/oceanbase/devtools/bin:$PATH"
 [[ -n "$FORWARDING_HOST" ]] && echo "$FORWARDING_HOST mirrors.oceanbase.com" >> /etc/hosts 2>/dev/null || true
