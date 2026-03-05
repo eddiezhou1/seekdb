@@ -27,7 +27,7 @@ if [[ -f "$SCRIPTS_DIR/frame.sh" ]]; then
   source "$SCRIPTS_DIR/frame.sh"
 fi
 
-if [[ "$PACKAGE_TYPE" == "release" ]] && [[ -x "$SCRIPTS_DIR/farm_compile_release.sh" ]]; then
+if [[ "$PACKAGE_TYPE" == "release" ]] && [[ -f "$SCRIPTS_DIR/farm_compile_release.sh" ]]; then
   script_name=farm_compile_release.sh
 else
   script_name=farm_compile.sh
@@ -35,7 +35,7 @@ fi
 
 mkdir -p "$TASK_DIR"
 set +e
-if [[ -x "$SCRIPTS_DIR/$script_name" ]]; then
+if [[ -f "$SCRIPTS_DIR/$script_name" ]]; then
   bash "$SCRIPTS_DIR/$script_name" 2>&1 | tee "$TASK_DIR/compile.output"
   compile_ret=$?
 else
@@ -44,7 +44,7 @@ else
 fi
 set -e
 
-if [[ -x "$SCRIPTS_DIR/farm_post_compile.sh" ]]; then
+if [[ -f "$SCRIPTS_DIR/farm_post_compile.sh" ]]; then
   bash "$SCRIPTS_DIR/farm_post_compile.sh" "$compile_ret"
 fi
 
