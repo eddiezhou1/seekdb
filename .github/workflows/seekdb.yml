@@ -76,8 +76,11 @@ jobs:
       - name: Show parser error (if any)
         if: steps.compile.outcome == 'failure'
         run: |
-          if [[ -f src/sql/parser/_gen_parser.error ]]; then echo "=== _gen_parser.error ==="; cat src/sql/parser/_gen_parser.error; fi
-          if [[ -f src/sql/parser/_gen_parser.output ]]; then echo "=== _gen_parser.output (last 100 lines) ==="; tail -100 src/sql/parser/_gen_parser.output; fi
+          echo "=== Compile failed, dumping parser logs ==="
+          ERR="${{ github.workspace }}/src/sql/parser/_gen_parser.error"
+          OUT="${{ github.workspace }}/src/sql/parser/_gen_parser.output"
+          if [[ -f "$ERR" ]]; then echo "--- _gen_parser.error ---"; cat "$ERR"; else echo "(no _gen_parser.error)"; fi
+          if [[ -f "$OUT" ]]; then echo "--- _gen_parser.output (last 80 lines) ---"; tail -80 "$OUT"; else echo "(no _gen_parser.output)"; fi
 
       - name: Mysqltest slice 0
         if: success()
