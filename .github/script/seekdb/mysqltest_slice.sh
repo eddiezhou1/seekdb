@@ -6,7 +6,7 @@ set -e
 
 WORKSPACE="${GITHUB_WORKSPACE:?}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SCRIPTS_DIR="$SCRIPT_DIR"
+SCRIPTS_DIR="$SCRIPT_DIR/scripts"
 
 export GITHUB_WORKSPACE="$WORKSPACE"
 export SEEKDB_TASK_DIR="${SEEKDB_TASK_DIR:?}"
@@ -25,8 +25,8 @@ for f in observer.zst obproxy.zst; do
   fi
 done
 
-if [[ -f "$SCRIPTS_DIR/mysqltest_for_farm.sh" ]]; then
-  bash "$SCRIPTS_DIR/mysqltest_for_farm.sh" "$@"
+if [[ -f "$SCRIPTS_DIR/mysqltest_for_seekdb.sh" ]]; then
+  bash "$SCRIPTS_DIR/mysqltest_for_seekdb.sh" "$@"
 else
-  echo "[mysqltest_slice.sh] No mysqltest_for_farm.sh, skip slice $SLICE_IDX."
+  echo "[mysqltest_slice.sh] No mysqltest_for_seekdb.sh, skip slice $SLICE_IDX."
 fi
