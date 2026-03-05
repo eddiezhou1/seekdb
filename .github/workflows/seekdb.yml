@@ -74,13 +74,18 @@ jobs:
         run: echo '++compile++' >> "${{ env.SEEKDB_TASK_DIR }}/fail_cases.output"
 
       - name: Show parser error (if any)
-        if: steps.compile.outcome == 'failure'
+        if: always() && (steps.compile.outcome == 'failure' || steps.compile.outcome == 'success')
         run: |
-          echo "=== Compile failed, dumping parser logs ==="
-          ERR="${{ github.workspace }}/src/sql/parser/_gen_parser.error"
-          OUT="${{ github.workspace }}/src/sql/parser/_gen_parser.output"
-          if [[ -f "$ERR" ]]; then echo "--- _gen_parser.error ---"; cat "$ERR"; else echo "(no _gen_parser.error)"; fi
-          if [[ -f "$OUT" ]]; then echo "--- _gen_parser.output (last 80 lines) ---"; tail -80 "$OUT"; else echo "(no _gen_parser.output)"; fi
+          WS="${{ github.workspace }}"
+          ERR="$WS/src/sql/parser/_gen_parser.error"
+          OUT="$WS/src/sql/parser/_gen_parser.output"
+          echo "workspace=$WS"
+          echo "looking for: $ERR"
+          ls -la "$WS/src/sql/parser/" 2>/dev/null || true
+          echo "--- _gen_parser.error ---"
+          if [[ -f "$ERR" ]]; then cat "$ERR"; else echo "(file not found)"; fi
+          echo "--- _gen_parser.output (last 80 lines) ---"
+          if [[ -f "$OUT" ]]; then tail -80 "$OUT"; else echo "(file not found)"; fi
 
       - name: Mysqltest slice 0
         if: success()
