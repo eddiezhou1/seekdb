@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
-# Compile: 与 scripts/farm_compile.sh run_new_oceanbase() 对齐（REPO=server + cmake）。
-# 不调用 frame.sh/main()，避免 Jenkins 依赖（dmidecode、/etc/hosts、git clone）。
-# 流程：build.sh $BUILD_TARGET --init --make，再打包 observer/obproxy 到 SEEKDB_TASK_DIR。
+# Compile: 步骤与 .github/workflows/buildbase 一致（init → build.sh $TARGET → cd build_* && make）。
 # Required env: GITHUB_WORKSPACE, SEEKDB_TASK_DIR
 # Optional: RELEASE_MODE, FORWARDING_HOST, MAKE, MAKE_ARGS
 set -e
@@ -9,39 +7,39 @@ set -e
 WORKSPACE="${GITHUB_WORKSPACE:?}"
 TASK_DIR="${SEEKDB_TASK_DIR:?}"
 
-# 与 farm_compile.sh 一致
 export GITHUB_WORKSPACE="$WORKSPACE"
 export SEEKDB_TASK_DIR="$TASK_DIR"
-export REPO="server"
 export PACKAGE_TYPE="${RELEASE_MODE:+release}"
 export PACKAGE_TYPE="${PACKAGE_TYPE:-debug}"
-export CREATE_AGENTSERVER=0
-export CREATE_LIBOBSERVER_SO=0
-export ENABLE_LIBOBLOG=0
 export MAKE="${MAKE:-make}"
 export MAKE_ARGS="${MAKE_ARGS:--j32}"
-export TARGET="observer"
 export PATH="$WORKSPACE/deps/3rd/usr/local/oceanbase/devtools/bin:$PATH"
+[[ -n "$FORWARDING_HOST" ]] && echo "$FORWARDING_HOST mirrors.oceanbase.com" >> /etc/hosts 2>/dev/null || true
+
 cd "$WORKSPACE"
 mkdir -p "$TASK_DIR"
 
-
 BUILD_TARGET="${PACKAGE_TYPE:-debug}"
-set +e
-if [[ -x "$WORKSPACE/build.sh" ]]; then
-  bash -x build.sh $BUILD_TARGET --init || exit 1
-  compile_ret=$?
-  cd build_* || exit 1
-  start=$(date +%s)
-  time $MAKE $MAKE_ARGS $TARGET
-  ret=$?
-else
-  echo "[compile.sh] No build.sh, skip."
-  compile_ret=0
-fi
-set -e
+BUILD_DIR="build_${BUILD_TARGET}"
+compile_ret=0
 
-# 产物落到 build_* 或当前目录，打包 observer/obproxy 为 zst 并拷贝到任务目录（对应 farm 的 mv $BINARY $BINARY_PATH）
+if [[ ! -x "$WORKSPACE/build.sh" ]]; then
+  echo "[compile.sh] No build.sh, skip."
+else
+  # Step 1: Build init（与 buildbase 一致）
+  bash build.sh init 2>&1 | tee "$TASK_DIR/compile_init.output"
+  [[ ${PIPESTATUS[0]} -ne 0 ]] && exit 1
+  # Step 2: Configure（与 buildbase "build.sh debug" 一致，增加 -DNEED_PARSER_CACHE=OFF）
+  bash build.sh "$BUILD_TARGET" -DNEED_PARSER_CACHE=OFF 2>&1 | tee "$TASK_DIR/compile_configure.output"
+  [[ ${PIPESTATUS[0]} -ne 0 ]] && exit 1
+  # Step 3: make（与 buildbase "cd build_debug && make -j4" 一致）
+  set +e
+  (cd "$WORKSPACE/$BUILD_DIR" && $MAKE $MAKE_ARGS observer) 2>&1 | tee "$TASK_DIR/compile.output"
+  compile_ret=${PIPESTATUS[0]}
+  set -e
+fi
+
+# 产物落到 build_*，打包 observer/obproxy 为 zst 并拷贝到任务目录
 for binary in observer obproxy; do
   for base in . build_debug build_release build; do
     if [[ -f "$WORKSPACE/$base/$binary" ]]; then
