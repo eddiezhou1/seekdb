@@ -1,7 +1,7 @@
 # SeekDB CI - 执行下沉版（Native）
 # 编译与测试在 self-hosted Runner 上直接执行，不经过 Farm2。
 # farm 脚本已从 farm-jenkins 复制到 .github/script/seekdb/scripts/，无需 clone。可选：FARM2_WORKER_IMAGE。
-name: SeekDB CI (Native)
+name: SeekDB CI 
 
 on:
   pull_request:
@@ -63,7 +63,7 @@ jobs:
               -e FORWARDING_HOST="${{ vars.FORWARDING_HOST || '' }}" \
               -e PATH="/workspace/deps/3rd/usr/local/oceanbase/devtools/bin:$PATH" \
               "${{ vars.FARM2_WORKER_IMAGE }}" \
-              /bin/bash -c '. /workspace/.github/script/seekdb/compile.sh'
+              /bin/bash -x /workspace/.github/script/seekdb/compile.sh
           else
             .github/script/seekdb/compile.sh
           fi
