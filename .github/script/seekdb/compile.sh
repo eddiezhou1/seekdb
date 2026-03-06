@@ -29,9 +29,9 @@ mkdir -p "$TASK_DIR"
 BUILD_TARGET="${PACKAGE_TYPE:-debug}"
 set +e
 if [[ -x "$WORKSPACE/build.sh" ]]; then
-  sh -x build.sh $BUILD_TARGET --init || return
+  bash -x build.sh $BUILD_TARGET --init || exit 1
   compile_ret=$?
-  cd build_* || return
+  cd build_* || exit 1
   start=$(date +%s)
   time $MAKE $MAKE_ARGS $TARGET
   ret=$?
