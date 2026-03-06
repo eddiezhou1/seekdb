@@ -27,10 +27,7 @@ if [[ ! -x "$WORKSPACE/build.sh" ]]; then
   echo "[compile.sh] No build.sh, skip."
 else
   # Step 1: Build init（与 buildbase 一致）
-  bash build.sh init 2>&1 | tee "$TASK_DIR/compile_init.output"
-  [[ ${PIPESTATUS[0]} -ne 0 ]] && exit 1
-  # Step 2: Configure（与 buildbase "build.sh debug" 一致，增加 -DNEED_PARSER_CACHE=OFF）
-  bash build.sh "$BUILD_TARGET" -DNEED_PARSER_CACHE=OFF 2>&1 | tee "$TASK_DIR/compile_configure.output"
+  bash build.sh "$BUILD_TARGET" init 2>&1 | tee "$TASK_DIR/compile_init.output"
   [[ ${PIPESTATUS[0]} -ne 0 ]] && exit 1
   # Step 3: make（与 buildbase "cd build_debug && make -j4" 一致）
   set +e
