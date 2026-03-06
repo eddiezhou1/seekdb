@@ -20,19 +20,21 @@ export CREATE_LIBOBSERVER_SO=0
 export ENABLE_LIBOBLOG=0
 export MAKE="${MAKE:-make}"
 export MAKE_ARGS="${MAKE_ARGS:--j32}"
-# 保证 build -> cmake -> gen_parser.sh 使用 deps 里的 bison 2.4.1
+export TARGET="observer"
 export PATH="$WORKSPACE/deps/3rd/usr/local/oceanbase/devtools/bin:$PATH"
-[[ -n "$FORWARDING_HOST" ]] && echo "$FORWARDING_HOST mirrors.oceanbase.com" >> /etc/hosts 2>/dev/null || true
-
 cd "$WORKSPACE"
 mkdir -p "$TASK_DIR"
 
-# run_new_oceanbase 等价：build.sh $BUILD_TARGET --init，再 make；此处用 --init --make 一步完成，并关 parser 缓存
+
 BUILD_TARGET="${PACKAGE_TYPE:-debug}"
 set +e
 if [[ -x "$WORKSPACE/build.sh" ]]; then
-  bash "$WORKSPACE/build.sh" "$BUILD_TARGET" --init --make -DNEED_PARSER_CACHE=OFF 2>&1 | tee "$TASK_DIR/compile.output"
+  sh -x build.sh $BUILD_TARGET --init || return
   compile_ret=$?
+  cd build_* || return
+  start=$(date +%s)
+  time $MAKE $MAKE_ARGS $TARGET
+  ret=$?
 else
   echo "[compile.sh] No build.sh, skip."
   compile_ret=0
